@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyNex Drones | The Future of Aerial Technology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/ScrollTrigger.min.js"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff00e6;
+            --dark: #0a0a1a;
+            --light: #e0e0ff;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, h4, .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+        
+        .hero-title {
+            color: rgba(0, 240, 255);
+            text-shadow: 
+                0 0 10px rgba(0, 240, 255, 0.7),
+                0 0 20px rgba(0, 240, 255, 0.5),
+                0 0 30px rgba(0, 240, 255, 0.3);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            letter-spacing: 2px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+        }
+        
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .border-glow {
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2), 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+        
+        #hero {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.2;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 20;
+        }
+        
+        .feature-card {
+            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 26, 0.6);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.3);
+        }
+        
+        .parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .stats-item {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(255, 0, 230, 0.1));
+            z-index: -1;
+        }
+        
+        .drone-model {
+            perspective: 1000px;
+        }
+        
+        .drone-model-inner {
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+        
+        .drone-model:hover .drone-model-inner {
+            transform: rotateY(20deg) rotateX(-10deg);
+        }
+        
+        /* Navbar link hover animation */
+        .nav-link {
+            position: relative;
+            padding: 8px 0;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Button hover effects */
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.4);
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+        
+        .btn-secondary {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.2);
+            color: white;
+        }
+        
+        .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn-secondary:hover::before {
+            width: 100%;
+        }
+        
+        .btn-dark {
+            background: var(--dark);
+            color: var(--light);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-dark:hover {
+            background: rgba(10, 10, 26, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 240, 255, 0.2);
+        }
+        
+        .btn-light {
+            background: white;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Model viewer styling */
+        model-viewer {
+            width: 100%;
+            height: 300px;
+            background-color: transparent;
+        }
+
+        .model-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+
+        /* New button styles */
+        .hero-btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .hero-btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .hero-btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.6);
+        }
+
+        .hero-btn-secondary {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 3D Background Canvas -->
+    <div id="canvas-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-opacity-90 backdrop-filter backdrop-blur-lg bg-dark border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-2xl font-orbitron text-gradient">SKYNEX</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="nav-link text-light hover:text-primary px-3 py-2 text-sm font-medium">Home</a>
+                        <a href="#features" class="nav-link text-light hover:text-primary px-3 py-2 text-sm font-medium">Features</a>
+                        <a href="#technology" class="nav-link text-light hover:text-primary px-3 py-2 text-sm font-medium">Technology</a>
+                        <a href="#models" class="nav-link text-light hover:text-primary px-3 py-2 text-sm font-medium">Models</a>
+                        <a href="#contact" class="nav-link text-light hover:text-primary px-3 py-2 text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                <div class="md:ml-4 flex items-center md:ml-6">
+                    <button class="btn-primary font-orbitron px-6 py-2 rounded-full font-medium">
+                        Order Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section id="hero" class="relative flex items-center justify-center">
+        <div class="hero-content text-center px-4 sm:px-6 lg:px-8">
+            <h1 class="hero-title text-5xl md:text-7xl lg:text-8xl font-orbitron mb-6">
+                <span class="block">REDEFINING</span>
+                <span class="block">AERIAL</span>
+                <span class="block">TECHNOLOGY</span>
+            </h1>
+            <p class="text-xl md:text-2xl max-w-3xl mx-auto mb-10 text-light/90">
+                Experience the future of drone technology with SkyNex - precision engineered for professionals, powered by AI.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-6">
+                <button class="hero-btn hero-btn-primary font-orbitron px-8 py-4 text-lg">
+                    Explore Models
+                </button>
+                <button class="hero-btn hero-btn-secondary font-orbitron px-8 py-4 text-lg">
+                    Watch Demo
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="py-20 relative z-10 bg-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-4xl md:text-5xl font-orbitron text-gradient mb-4">Cutting-Edge Features</h2>
+                <p class="text-xl max-w-3xl mx-auto">Engineered for performance, designed for the future</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card border-glow rounded-xl p-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-orbitron mb-3">Hyper-Speed</h3>
+                    <p class="text-light">0-60mph in 1.2 seconds with our proprietary propulsion system, the fastest in commercial drones.</p>
+                </div>
+                
+                <div class="feature-card border-glow rounded-xl p-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-orbitron mb-3">AI Pilot</h3>
+                    <p class="text-light">Our neural network learns your flying style and anticipates your commands before you make them.</p>
+                </div>
+                
+                <div class="feature-card border-glow rounded-xl p-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-orbitron mb-3">Quantum Battery</h3>
+                    <p class="text-light">120 minutes of flight time with our graphene-enhanced power cells that charge in just 15 minutes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Technology Showcase -->
+    <section id="technology" class="py-20 relative z-10 bg-gradient-to-b from-dark to-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2">
+                    <h2 class="text-4xl md:text-5xl font-orbitron text-gradient mb-6">Next-Gen Technology</h2>
+                    <p class="text-xl mb-8">SkyNex drones incorporate bleeding-edge aerospace technology previously only available to military applications.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-orbitron mb-1">LiDAR Mapping</h3>
+                                <p>Precision environmental scanning with 1cm accuracy for professional surveying and mapping.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-orbitron mb-1">Thermal Vision</h3>
+                                <p>FLIR thermal imaging with 640×512 resolution for search & rescue and industrial inspections.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round, stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-orbitron mb-1">Collision Avoidance</h3>
+                                <p>360° omnidirectional sensing with millimeter-wave radar and ultrasonic sensors.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 drone-model mt-12 lg:mt-0">
+                    <div class="drone-model-inner relative">
+                        <div class="w-full h-96 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center">
+                            <div class="relative w-64 h-64">
+                                <!-- This would be replaced with an actual 3D model in a production environment -->
+                                <div class="absolute inset-0 bg-gray-800 bg-opacity-30 rounded-full"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gray-900 rounded-full"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gray-800 rounded-full"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-gray-700 rounded-full"></div>
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-primary rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="py-20 bg-dark relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="stats-item text-center p-8 rounded-xl">
+                    <div class="text-5xl font-orbitron text-gradient mb-2">120+</div>
+                    <div class="text-light">Patents Filed</div>
+                </div>
+                <div class="stats-item text-center p-8 rounded-xl">
+                    <div class="text-5xl font-orbitron text-gradient mb-2">7.2M</div>
+                    <div class="text-light">Flight Hours</div>
+                </div>
+                <div class="stats-item text-center p-8 rounded-xl">
+                    <div class="text-5xl font-orbitron text-gradient mb-2">94%</div>
+                    <div class="text-light">Energy Efficiency</div>
+                </div>
+                <div class="stats-item text-center p-8 rounded-xl">
+                    <div class="text-5xl font-orbitron text-gradient mb-2">0.001%</div>
+                    <div class="text-light">Failure Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Drone Models -->
+    <section id="models" class="py-20 bg-gray-900 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-4xl md:text-5xl font-orbitron text-gradient mb-4">Our Flagship Models</h2>
+                <p class="text-xl max-w-3xl mx-auto">Precision engineered for every professional need</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="border-glow rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
+                    <div class="model-container">
+                        <model-viewer 
+                            src="https://sparkscratch-p.github.io/assets/3D/drone.glb" 
+                            alt="Nexus X1 Drone"
+                            ar
+                            ar-modes="webxr scene-viewer quick-look"
+                            camera-controls
+                            auto-rotate
+                            shadow-intensity="1">
+                        </model-viewer>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2">Nexus X1</h3>
+                        <p class="text-light mb-4">Professional cinematography drone with 8K HDR camera and 3-axis gimbal.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-orbitron text-gradient">$4,999</span>
+                            <button class="btn-primary font-orbitron px-4 py-1 rounded-full text-sm">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-glow rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
+                    <div class="model-container">
+                        <model-viewer 
+                            src="https://sparkscratch-p.github.io/assets/3D/board.glb" 
+                            alt="Specter S2 Drone"
+                            ar
+                            ar-modes="webxr scene-viewer quick-look"
+                            camera-controls
+                            auto-rotate
+                            shadow-intensity="1">
+                        </model-viewer>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2">Specter S2</h3>
+                        <p class="text-light mb-4">Industrial inspection drone with thermal imaging and LiDAR payload options.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-orbitron text-gradient">$7,499</span>
+                            <button class="btn-primary font-orbitron px-4 py-1 rounded-full text-sm">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-glow rounded-xl overflow-hidden hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
+                    <div class="model-container">
+                        <model-viewer 
+                            src="https://sparkscratch-p.github.io/assets/3D/bldc.glb" 
+                            alt="Vanguard V3 Drone"
+                            ar
+                            ar-modes="webxr scene-viewer quick-look"
+                            camera-controls
+                            auto-rotate
+                            shadow-intensity="1">
+                        </model-viewer>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-orbitron mb-2">Vanguard V3</h3>
+                        <p class="text-light mb-4">Military-grade endurance drone with 6-hour flight time and encrypted comms.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-orbitron text-gradient">$12,999</span>
+                            <button class="btn-primary font-orbitron px-4 py-1 rounded-full text-sm">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="py-32 bg-gradient-to-r from-primary to-secondary relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20 bg-dark"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+            <h2 class="text-4xl md:text-5xl font-orbitron text-dark mb-6">Ready to Elevate Your Aerial Operations?</h2>
+            <p class="text-xl text-dark mb-10 max-w-3xl mx-auto">Join thousands of professionals who trust SkyNex for their mission-critical aerial needs.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="btn-dark font-orbitron px-8 py-3 rounded-full font-medium text-lg">
+                    Request Demo
+                </button>
+                <button class="btn-light font-orbitron px-8 py-3 rounded-full font-medium text-lg">
+                    Contact Sales
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer id="contact" class="bg-dark py-16 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <h3 class="text-2xl font-orbitron text-gradient mb-6">SKYNEX</h3>
+                    <p class="text-light mb-6">Pushing the boundaries of aerial technology since 2018.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-light hover:text-primary">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-light hover:text-primary">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-light hover:text-primary">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-light hover:text-primary">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-orbitron text-light mb-6">Products</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-light hover:text-primary">Nexus Series</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Specter Series</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Vanguard Series</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Accessories</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Software</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-orbitron text-light mb-6">Resources</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-light hover:text-primary">Documentation</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Tutorials</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">API Reference</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Community</a></li>
+                        <li><a href="#" class="text-light hover:text-primary">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-orbitron text-light mb-6">Contact</h3>
+                    <ul class="space-y-3">
+                        <li class="text-light">123 Innovation Drive</li>
+                        <li class="text-light">San Francisco, CA 94107</li>
+                        <li class="text-light">+1 (800) 555-0199</li>
+                        <li class="text-light">contact@skynex.com</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-light mb-4 md:mb-0">© 2023 SkyNex Technologies. All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-light hover:text-primary">Privacy Policy</a>
+                    <a href="#" class="text-light hover:text-primary">Terms of Service</a>
+                    <a href="#" class="text-light hover:text-primary">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Three.js 3D Background - Starry Dots
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // Create star particles
+            const particlesCount = 2000;
+            const positions = new Float32Array(particlesCount * 3);
+            const colors = new Float32Array(particlesCount * 3);
+            const sizes = new Float32Array(particlesCount);
+            
+            for(let i = 0; i < particlesCount; i++) {
+                // Random positions in a sphere
+                const i3 = i * 3;
+                const radius = 5 + Math.random() * 15;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                
+                positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i3 + 2] = radius * Math.cos(phi);
+                
+                // Random colors (mostly white with some blue/pink)
+                const isPrimary = Math.random() > 0.9;
+                const isSecondary = Math.random() > 0.95;
+                
+                if(isSecondary) {
+                    colors[i3] = 1; // R (pink)
+                    colors[i3 + 1] = 0; // G
+                    colors[i3 + 2] = 0.9; // B
+                } else if(isPrimary) {
+                    colors[i3] = 0; // R (cyan)
+                    colors[i3 + 1] = 0.94; // G
+                    colors[i3 + 2] = 1; // B
+                } else {
+                    colors[i3] = 1; // R (white)
+                    colors[i3 + 1] = 1; // G
+                    colors[i3 + 2] = 1; // B
+                }
+                
+                // Random sizes
+                sizes[i] = 0.05 + Math.random() * 0.2;
+            }
+            
+            const particlesGeometry = new THREE.BufferGeometry();
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                sizeAttenuation: true,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+            
+            // Camera position
+            camera.position.z = 5;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Slow rotation
+                particles.rotation.x += 0.0001;
+                particles.rotation.y += 0.0002;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // GSAP animations for scroll
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // HERO SECTION
+            gsap.set(".hero-content h1 span", {y: 80, opacity: 0, scale: 0.8});
+            gsap.set(".hero-content p", {y: 40, opacity: 0});
+            gsap.set(".hero-content button", {y: 40, opacity: 0, scale: 0.8});
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: "#hero",
+                    start: "top 60%"
+                }
+            })
+            .to(".hero-content h1 span", {y: 0, opacity: 1, scale: 1, stagger: 0.2, duration: 1, ease: "power3.out"})
+            .to(".hero-content p", {y: 0, opacity: 1, duration: 1, ease: "power3.out"}, "-=0.5")
+            .to(".hero-content button", {y: 0, opacity: 1, scale: 1, stagger: 0.15, duration: 0.7, ease: "back.out(1.7)"}, "-=0.5");
+
+            // FEATURES SECTION
+            gsap.set(".feature-card", {y: 60, opacity: 0, scale: 0.9});
+            document.querySelectorAll('.feature-card').forEach((card, i) => {
+                gsap.to(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 80%",
+                        toggleActions: "play none none none"
+                    },
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.8,
+                    delay: i * 0.1,
+                    ease: "back.out(1.7)"
+                });
+            });
+
+            // TECHNOLOGY SECTION
+            gsap.set("#technology .lg\\:w-1\/2:first-child", {x: -80, opacity: 0});
+            gsap.set("#technology .drone-model", {x: 80, opacity: 0, scale: 0.9});
+            gsap.to("#technology .lg\\:w-1\/2:first-child", {
+                scrollTrigger: {
+                    trigger: "#technology",
+                    start: "top 70%"
+                },
+                x: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power3.out"
+            });
+            gsap.to("#technology .drone-model", {
+                scrollTrigger: {
+                    trigger: "#technology",
+                    start: "top 70%"
+                },
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 1,
+                delay: 0.2,
+                ease: "power3.out"
+            });
+
+            // STATS SECTION (count up)
+            gsap.set(".stats-item", {y: 40, opacity: 0, scale: 0.95});
+            document.querySelectorAll('.stats-item').forEach((item, i) => {
+                gsap.to(item, {
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    },
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.7,
+                    delay: i * 0.1,
+                    ease: "power2.out",
+                    onStart: function() {
+                        // Count up animation for numbers
+                        const el = item.querySelector('div.text-5xl');
+                        if (el) {
+                            const final = el.textContent.replace(/[^\d.]/g, '');
+                            const isPercent = el.textContent.includes('%');
+                            const isM = el.textContent.includes('M');
+                            const isPlus = el.textContent.includes('+');
+                            let end = parseFloat(final);
+                            if (isM) end *= 1000000;
+                            let obj = {val: 0};
+                            gsap.to(obj, {
+                                val: end,
+                                duration: 1.2,
+                                ease: "power1.out",
+                                onUpdate: function() {
+                                    let v = obj.val;
+                                    if (isM) v = (v/1000000).toFixed(1) + 'M';
+                                    else if (isPercent) v = v.toFixed(1) + '%';
+                                    else if (isPlus) v = Math.floor(v) + '+';
+                                    else v = Math.floor(v);
+                                    el.textContent = v;
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            // MODELS SECTION
+            gsap.set("#models .border-glow", {y: 60, opacity: 0, scale: 0.9, rotateY: 20});
+            document.querySelectorAll('#models .border-glow').forEach((card, i) => {
+                gsap.to(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none none"
+                    },
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    rotateY: 0,
+                    duration: 0.9,
+                    delay: i * 0.15,
+                    ease: "back.out(1.7)"
+                });
+            });
+
+            // CTA SECTION
+            gsap.set(".py-32.bg-gradient-to-r h2", {y: 60, opacity: 0, scale: 0.95});
+            gsap.set(".py-32.bg-gradient-to-r p", {y: 40, opacity: 0});
+            gsap.set(".py-32.bg-gradient-to-r button", {y: 30, opacity: 0, scale: 0.9});
+            gsap.to(".py-32.bg-gradient-to-r h2", {
+                scrollTrigger: {
+                    trigger: ".py-32.bg-gradient-to-r",
+                    start: "top 80%"
+                },
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 1,
+                ease: "power3.out"
+            });
+            gsap.to(".py-32.bg-gradient-to-r p", {
+                scrollTrigger: {
+                    trigger: ".py-32.bg-gradient-to-r",
+                    start: "top 80%"
+                },
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                delay: 0.2,
+                ease: "power3.out"
+            });
+            gsap.to(".py-32.bg-gradient-to-r button", {
+                scrollTrigger: {
+                    trigger: ".py-32.bg-gradient-to-r",
+                    start: "top 80%"
+                },
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 0.7,
+                delay: 0.4,
+                stagger: 0.15,
+                ease: "back.out(1.7)"
+            });
+
+            // FOOTER
+            gsap.set("footer", {y: 40, opacity: 0});
+            gsap.to("footer", {
+                scrollTrigger: {
+                    trigger: "footer",
+                    start: "top 90%"
+                },
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power2.out"
+            });
+
+            // Parallax effect
+            window.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                const y = -(e.clientY / window.innerHeight - 0.5) * 20;
+                gsap.to(particles.rotation, {
+                    x: y * 0.005,
+                    y: x * 0.01,
+                    duration: 2
+                });
+                gsap.to(".hero-content", {
+                    x: x * 0.5,
+                    y: y * 0.5,
+                    duration: 1
+                });
+            });
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=Prodyumna/skynex" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
